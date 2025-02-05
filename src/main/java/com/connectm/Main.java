@@ -1,45 +1,57 @@
 package com.connectm;
 
-import javax.swing.*;
+import com.connectm.controller.GameController;
+import com.connectm.model.GameState;
+import com.connectm.view.ConnectMView;
 import com.formdev.flatlaf.FlatLightLaf;
+
+import javax.swing.*;
+import javax.swing.border.EmptyBorder;
 import java.awt.*;
 
 public class Main {
     public static void main(String[] args) {
         SwingUtilities.invokeLater(() -> {
-            // Set FlatLaf for a modern look.
             try {
                 UIManager.setLookAndFeel(new FlatLightLaf());
             } catch (Exception e) {
                 e.printStackTrace();
             }
 
+            // Initialize the game model.
+            int boardSize = 7;
+            GameState gameState = new GameState(boardSize);
+
+            // Create the view with cell size 80 and header size 100.
+            ConnectMView view = new ConnectMView(gameState, 80, 100);
+
+            // Create the controller.
+            GameController controller = new GameController(gameState, view);
+
+            // Create a wrapper panel with GridBagLayout to center the view.
+            JPanel wrapper = new JPanel(new GridBagLayout());
+            wrapper.setBackground(Color.WHITE);
+            // Adding an empty border ensures equal margins around the view.
+            wrapper.setBorder(new EmptyBorder(50, 50, 50, 50));
+
+            // Add the view to the wrapper.
+            GridBagConstraints gbc = new GridBagConstraints();
+            gbc.gridx = 0;
+            gbc.gridy = 0;
+            // Do not stretch the view.
+            gbc.fill = GridBagConstraints.NONE;
+            gbc.anchor = GridBagConstraints.CENTER;
+            // Give extra space so that the wrapper can expand.
+            gbc.weightx = 1.0;
+            gbc.weighty = 1.0;
+            wrapper.add(view, gbc);
+
+            // Create the frame and add the wrapper in the center.
             JFrame frame = new JFrame("Connect M");
             frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-
-            // Create the board panel with headers (e.g., 7 columns, 80px cell, 100px header).
-            BoardPanelWithHeaders boardPanel = new BoardPanelWithHeaders(7, 80, 110);
-
-            // Wrap the board panel in a container that centers it both horizontally and vertically.
-            // We use BoxLayout with vertical and horizontal glue.
-            JPanel centerPanel = new JPanel();
-            centerPanel.setLayout(new BoxLayout(centerPanel, BoxLayout.Y_AXIS));
-            centerPanel.setBackground(Color.WHITE);
-
-            centerPanel.add(Box.createVerticalGlue());
-
-            JPanel horizontalPanel = new JPanel();
-            horizontalPanel.setLayout(new BoxLayout(horizontalPanel, BoxLayout.X_AXIS));
-            horizontalPanel.setBackground(Color.WHITE);
-            horizontalPanel.add(Box.createHorizontalGlue());
-            horizontalPanel.add(boardPanel);
-            horizontalPanel.add(Box.createHorizontalGlue());
-
-            centerPanel.add(horizontalPanel);
-            centerPanel.add(Box.createVerticalGlue());
-
-            frame.getContentPane().add(centerPanel, BorderLayout.CENTER);
-            frame.setSize(800, 800);
+            frame.getContentPane().setLayout(new BorderLayout());
+            frame.getContentPane().add(wrapper, BorderLayout.CENTER);
+            frame.pack();
             frame.setLocationRelativeTo(null);
             frame.setVisible(true);
         });
