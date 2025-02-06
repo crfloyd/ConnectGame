@@ -8,7 +8,7 @@ public class AIPlayer {
     private final int HUMAN_PLAYER = 1;
     private final int DEPTH = 4; // Controls difficulty (higher = smarter)
 
-    public int getBestMove(Board board) {
+    public int getBestMove(Board board, int discsToWin) {
         int bestMove = -1;
         int bestScore = Integer.MIN_VALUE;
 
@@ -17,7 +17,7 @@ public class AIPlayer {
                 // Simulate dropping a piece in this column
                 int row = board.dropPiece(col, AI_PLAYER);
                 if (row != -1) {
-                    int score = minimax(board, DEPTH, Integer.MIN_VALUE, Integer.MAX_VALUE, false);
+                    int score = minimax(board, discsToWin, DEPTH, Integer.MIN_VALUE, Integer.MAX_VALUE, false);
                     board.removePiece(col); // Undo move
 
                     if (score > bestScore) {
@@ -30,10 +30,10 @@ public class AIPlayer {
         return bestMove; // Return the column with the best score
     }
 
-    private int minimax(Board board, int depth, int alpha, int beta, boolean isMaximizing) {
+    private int minimax(Board board, int discsToWin, int depth, int alpha, int beta, boolean isMaximizing) {
         // Base cases: Check for a win, loss, or depth limit
-        if (board.checkWin(AI_PLAYER)) return 1000;
-        if (board.checkWin(HUMAN_PLAYER)) return -1000;
+        if (board.checkWin(AI_PLAYER, discsToWin)) return 1000;
+        if (board.checkWin(HUMAN_PLAYER, discsToWin)) return -1000;
         if (depth == 0) return evaluateBoard(board);
 
         if (isMaximizing) {
@@ -42,7 +42,7 @@ public class AIPlayer {
                 if (!board.isColumnFull(col)) {
                     int row = board.dropPiece(col, AI_PLAYER);
                     if (row != -1) {
-                        int eval = minimax(board, depth - 1, alpha, beta, false);
+                        int eval = minimax(board, discsToWin, depth - 1, alpha, beta, false);
                         board.removePiece(col); // Undo move
                         maxEval = Math.max(maxEval, eval);
                         alpha = Math.max(alpha, eval);
@@ -57,7 +57,7 @@ public class AIPlayer {
                 if (!board.isColumnFull(col)) {
                     int row = board.dropPiece(col, HUMAN_PLAYER);
                     if (row != -1) {
-                        int eval = minimax(board, depth - 1, alpha, beta, true);
+                        int eval = minimax(board, discsToWin, depth - 1, alpha, beta, true);
                         board.removePiece(col); // Undo move
                         minEval = Math.min(minEval, eval);
                         beta = Math.min(beta, eval);

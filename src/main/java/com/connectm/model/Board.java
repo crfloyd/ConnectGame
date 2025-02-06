@@ -3,7 +3,6 @@ package com.connectm.model;
 import java.util.Arrays;
 
 public class Board {
-    private static final int M = 4; // Number of pieces in a row to win
     private final int size;
     private final int[][] board; // 0 = empty, 1 = player piece, 2 = opponent (if needed)
 
@@ -55,7 +54,7 @@ public class Board {
     }
 
 
-    public boolean checkWin(int player) {
+    public boolean checkWin(int player, int discsToWin) {
         int[][] directions = {
                 {1, 0}, {0, 1}, {1, 1}, {1, -1} // Vertical, Horizontal, Diagonal (\), Diagonal (/)
         };
@@ -65,8 +64,11 @@ public class Board {
                 if (board[row][col] == player) {
                     for (int[] dir : directions) {
                         int count = countConsecutive(row, col, dir[0], dir[1], player);
-                        if (count >= M) { // Always check for 4 in a row
+                        if (count >= discsToWin) { // Always check for 4 in a row
                             System.out.println("Win detected at row " + row + ", column " + col + " for Player " + player);
+                            return true;
+                        }
+                        if (countConsecutive(row, col, dir[0], dir[1], player) >= discsToWin) {
                             return true;
                         }
                     }

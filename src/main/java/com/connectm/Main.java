@@ -18,9 +18,23 @@ public class Main {
                 e.printStackTrace();
             }
 
-            // Initialize the game model.
-            int boardSize = 7;
-            GameState gameState = new GameState(boardSize);
+            if (args.length < 3) {
+                System.out.println("Usage: java -jar ConnectM.jar <N> <M> <H>");
+                System.exit(1);
+            }
+
+            int boardSize = Integer.parseInt(args[0]);
+            int M = Integer.parseInt(args[1]);
+            int firstPlayer = Integer.parseInt(args[2]);
+
+            // Validate inputs
+            if (boardSize < 3 || boardSize > 10 || M < 2 || M > boardSize || (firstPlayer != 0 && firstPlayer != 1)) {
+                System.out.println("Invalid parameters. Ensure:");
+                System.out.println(" 3 ≤ N ≤ 10, 2 ≤ M ≤ N, H is 0 (AI first) or 1 (Human first)");
+                System.exit(1);
+            }
+
+            GameState gameState = new GameState(boardSize, M);
 
             // Create the view with cell size 80 and header size 100.
             ConnectMView view = new ConnectMView(gameState, 80, 100);

@@ -2,11 +2,13 @@ package com.connectm.model;
 
 public class GameState {
     private final Board board;
+    private final int discsToWin;
     private int currentPlayer;
     private boolean gameOver;
 
-    public GameState(int boardSize) {
+    public GameState(int boardSize, int discsToWin) {
         board = new Board(boardSize);
+        this.discsToWin = discsToWin;
         currentPlayer = 1; // 1 for player, 2 for opponent (if you add AI later)
         gameOver = false;
     }
@@ -29,5 +31,9 @@ public class GameState {
 
     public void setGameOver(boolean over) {
         gameOver = over;
+    }
+
+    public int getDiscsToWin() {
+        return discsToWin;
     }
 }

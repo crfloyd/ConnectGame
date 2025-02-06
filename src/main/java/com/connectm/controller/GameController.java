@@ -45,7 +45,7 @@ public class GameController {
         System.out.println("Finalizing move: Player " + player + " at column " + col + " row " + rowLanded);
 
         // Check for a win
-        if (gameState.getBoard().checkWin(player)) {
+        if (gameState.getBoard().checkWin(player, gameState.getDiscsToWin())) {
             gameState.setGameOver(true);
 //            view.showWinningMove(gameState.getBoard().getWinningPositions());
             view.showGameOverDialog("Player " + player + " wins!");
@@ -83,7 +83,7 @@ public class GameController {
         if (gameState.isGameOver() || aiPlayer == null) return; // Ensure AI exists
 
         Timer aiMoveDelay = new Timer(500, e -> { // Delay for realism
-            int aiMove = aiPlayer.getBestMove(gameState.getBoard());
+            int aiMove = aiPlayer.getBestMove(gameState.getBoard(), gameState.getDiscsToWin());
 
             if (aiMove != -1) {
                 Move move = new Move(aiMove);
