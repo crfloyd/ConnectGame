@@ -106,4 +106,13 @@ public class Board {
             Arrays.fill(board[i], 0);
         }
     }
+
+    public void removePiece(int col) {
+        for (int row = 0; row < size; row++) {
+            if (board[row][col] != 0) {
+                board[row][col] = 0; // Reset the cell
+                return;
+            }
+        }
+    }
 }

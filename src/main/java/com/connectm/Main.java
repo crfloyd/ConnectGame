@@ -26,7 +26,7 @@ public class Main {
             ConnectMView view = new ConnectMView(gameState, 80, 100);
 
             // Create the controller.
-            GameController controller = new GameController(gameState, view);
+            GameController controller = new GameController(gameState, view, true);
 
             // Create a wrapper panel with GridBagLayout to center the view.
             JPanel wrapper = new JPanel(new GridBagLayout());

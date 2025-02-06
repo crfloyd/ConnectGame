@@ -9,6 +9,7 @@ import javax.swing.*;
 import java.awt.*;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
+import java.util.ArrayList;
 
 public class ConnectMView extends JPanel {
     private final int gridSize;
@@ -32,6 +33,9 @@ public class ConnectMView extends JPanel {
     private final int animDelay = 20; // milliseconds between animation updates
     private final double animStep = 0.3; // row increment per tick
     private Color fallingPieceColor;
+
+    private java.util.List<int[]> winningPositions = new ArrayList<int[]>();
+
 
     public ConnectMView(GameState gameState, int cellSize, int headerSize) {
         this.gameState = gameState;
@@ -167,12 +171,14 @@ public class ConnectMView extends JPanel {
             int previewX = boardX + hoveredColumn * cellSize + (cellSize - previewDiameter) / 2;
             int previewY = (previewAreaHeight - previewDiameter) / 2;
             int currentPlayer = gameState.getCurrentPlayer();
-            Color previewColor = (currentPlayer == 1) ? new Color(220, 20, 60) : new Color(255, 215, 0);
-            g2d.setColor(previewColor);
-            g2d.fillOval(previewX, previewY, previewDiameter, previewDiameter);
-            g2d.setColor(new Color(100, 100, 100));
-            g2d.setStroke(new BasicStroke(2));
-            g2d.drawOval(previewX, previewY, previewDiameter, previewDiameter);
+//            Color previewColor = (currentPlayer == 1) ? new Color(220, 20, 60) : new Color(255, 215, 0);
+            if (currentPlayer == 1) {
+                g2d.setColor(redColor);
+                g2d.fillOval(previewX, previewY, previewDiameter, previewDiameter);
+                g2d.setColor(new Color(100, 100, 100));
+                g2d.setStroke(new BasicStroke(2));
+                g2d.drawOval(previewX, previewY, previewDiameter, previewDiameter);
+            }
         }
 
         // --- Draw Board Background (Connect 4 Style) ---
@@ -257,6 +263,11 @@ public class ConnectMView extends JPanel {
                 System.exit(0);
             }
         });
+    }
+
+    public void showWinningMove(java.util.List<int[]> positions) {
+        this.winningPositions = positions;
+        repaint(); // Redraw the board to show highlights
     }
 
     private void resetGame() {
