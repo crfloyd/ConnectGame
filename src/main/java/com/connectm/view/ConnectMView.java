@@ -9,7 +9,6 @@ import javax.swing.*;
 import java.awt.*;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
-import java.util.ArrayList;
 
 public class ConnectMView extends JPanel {
     private final int gridSize;
@@ -30,11 +29,8 @@ public class ConnectMView extends JPanel {
     private int animColumn = -1;
     private int animTargetRow = -1;
     private double animCurrentRow = -1;
-    private final int animDelay = 20; // milliseconds between animation updates
     private final double animStep = 0.3; // row increment per tick
     private Color fallingPieceColor;
-
-    private java.util.List<int[]> winningPositions = new ArrayList<int[]>();
 
 
     public ConnectMView(GameState gameState, int cellSize, int headerSize) {
@@ -84,12 +80,23 @@ public class ConnectMView extends JPanel {
             public void mouseClicked(MouseEvent e) {
                 if (isAnimating) return;
                 if (hoveredColumn >= 0 && hoveredColumn < gridSize && controller != null) {
-                    controller.handleColumnClick(hoveredColumn);
+                    handleColumnClick(hoveredColumn);
                 }
             }
         };
         addMouseMotionListener(mouseHandler);
         addMouseListener(mouseHandler);
+    }
+
+    // Called by the view when the user clicks a column.
+    public void handleColumnClick(int col) {
+        if (gameState.getBoard().isColumnFull(col)) {
+            return;
+        }
+        // Create a move (for now, only the column is needed).
+        Move move = new Move(col);
+        // Tell the view to animate the drop of the current player's piece.
+        animateDrop(move, gameState.getCurrentPlayer());
     }
 
     public void setGameController(GameController controller) {
@@ -103,7 +110,7 @@ public class ConnectMView extends JPanel {
 
         int targetRow = -1;
         for (int row = gridSize - 1; row >= 0; row--) {
-            if (board.getBoard()[row][move.getColumn()] == 0) {
+            if (board.getState()[row][move.column()] == 0) {
                 targetRow = row;
                 break;
             }
@@ -111,16 +118,22 @@ public class ConnectMView extends JPanel {
         if (targetRow == -1) return;
 
         isAnimating = true;
-        animColumn = move.getColumn();
+        animColumn = move.column();
         animTargetRow = targetRow;
         animCurrentRow = -1; // Start above the board
 
-        final double gravity = 0.1;   // Acceleration factor (lower = smoother)
-        final double maxSpeed = 1.0;  // Maximum fall speed (keep it reasonable)
+        getDropTimer(player).start();
+    }
 
-        final double[] speed = {0.1}; // Initial slow speed
+    private Timer getDropTimer(int player) {
+        final double gravity = 0.07;   // Acceleration factor (lower = smoother)
+        final double maxSpeed = 0.8;  // Maximum fall speed
 
-        Timer timer = new Timer(animDelay, e -> {
+        final double[] speed = {0.08}; // Initial slow speed
+
+        // milliseconds between animation updates
+        int animDelay = 25;
+        return new Timer(animDelay, e -> {
             if (animCurrentRow < animTargetRow) {
                 speed[0] = Math.min(speed[0] + gravity, maxSpeed); // Accelerate smoothly
                 animCurrentRow += speed[0]; // Apply updated speed
@@ -128,7 +141,7 @@ public class ConnectMView extends JPanel {
                 if (animCurrentRow >= animTargetRow) { // Smooth landing
                     animCurrentRow = animTargetRow;
                     isAnimating = false;
-                    controller.finalizeMove(animColumn, animTargetRow, player);
+                    controller.finalizeMove(animColumn, player);
                     animColumn = -1;
                     animTargetRow = -1;
                     animCurrentRow = -1;
@@ -137,10 +150,7 @@ public class ConnectMView extends JPanel {
             }
             repaint();
         });
-
-        timer.start();
     }
-
 
 
     @Override
@@ -211,7 +221,7 @@ public class ConnectMView extends JPanel {
 
         // --- Draw Pieces from the Board Model ---
         Board boardModel = gameState.getBoard();
-        int[][] boardArray = boardModel.getBoard();
+        int[][] boardArray = boardModel.getState();
         for (int row = 0; row < gridSize; row++) {
             for (int col = 0; col < gridSize; col++) {
                 if (boardArray[row][col] != 0) {
@@ -263,11 +273,6 @@ public class ConnectMView extends JPanel {
                 System.exit(0);
             }
         });
-    }
-
-    public void showWinningMove(java.util.List<int[]> positions) {
-        this.winningPositions = positions;
-        repaint(); // Redraw the board to show highlights
     }
 
     private void resetGame() {

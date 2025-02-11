@@ -6,10 +6,10 @@ public class GameState {
     private int currentPlayer;
     private boolean gameOver;
 
-    public GameState(int boardSize, int discsToWin) {
+    public GameState(int boardSize, int discsToWin, int startingPlayer) {
         board = new Board(boardSize);
         this.discsToWin = discsToWin;
-        currentPlayer = 1; // 1 for player, 2 for opponent (if you add AI later)
+        this.currentPlayer = startingPlayer;
         gameOver = false;
     }
 
@@ -35,5 +35,14 @@ public class GameState {
 
     public int getDiscsToWin() {
         return discsToWin;
+    }
+
+    public boolean isBoardFull() {
+        for (int col = 0; col < board.getSize(); col++) {
+            if (!board.isColumnFull(col)) {
+                return false;
+            }
+        }
+        return true;
     }
 }

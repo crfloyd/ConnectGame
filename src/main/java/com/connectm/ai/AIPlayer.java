@@ -1,14 +1,16 @@
 package com.connectm.ai;
 
 import com.connectm.model.Board;
-import com.connectm.model.Move;
 
 public class AIPlayer {
     private final int AI_PLAYER = 2;  // AI is player 2
     private final int HUMAN_PLAYER = 1;
     private final int DEPTH = 4; // Controls difficulty (higher = smarter)
+    private final int[][] DIRECTIONS = {{1, 0}, {0, 1}, {1, 1}, {1, -1}}; // Vertical, Horizontal, Diagonal (\), Diagonal (/)
+    private int discsToWin;
 
     public int getBestMove(Board board, int discsToWin) {
+        this.discsToWin = discsToWin;
         int bestMove = -1;
         int bestScore = Integer.MIN_VALUE;
 
@@ -70,14 +72,14 @@ public class AIPlayer {
     }
 
     private int evaluateBoard(Board board) {
-        // Basic evaluation: Count 3-in-a-row for AI (+50), for human (-50)
+        // Basic evaluation: Count (discsToWin-1)-in-a-row for AI (+50), for human (-50)
         int score = 0;
 
         for (int row = 0; row < board.getSize(); row++) {
             for (int col = 0; col < board.getSize(); col++) {
-                if (board.getBoard()[row][col] == AI_PLAYER) {
+                if (board.getState()[row][col] == AI_PLAYER) {
                     score += checkPotential(board, row, col, AI_PLAYER);
-                } else if (board.getBoard()[row][col] == HUMAN_PLAYER) {
+                } else if (board.getState()[row][col] == HUMAN_PLAYER) {
                     score -= checkPotential(board, row, col, HUMAN_PLAYER);
                 }
             }
@@ -87,21 +89,20 @@ public class AIPlayer {
     }
 
     private int checkPotential(Board board, int row, int col, int player) {
-        int[][] directions = {{1, 0}, {0, 1}, {1, 1}, {1, -1}}; // Vertical, Horizontal, Diagonal (\), Diagonal (/)
         int score = 0;
 
-        for (int[] dir : directions) {
+        for (int[] dir : DIRECTIONS) {
             int count = 1;
             int r = row + dir[0], c = col + dir[1];
 
             while (r >= 0 && r < board.getSize() && c >= 0 && c < board.getSize() &&
-                    board.getBoard()[r][c] == player) {
+                    board.getState()[r][c] == player) {
                 count++;
                 r += dir[0];
                 c += dir[1];
             }
 
-            if (count == 3) score += 50; // Give high value for near-wins
+            if (count == discsToWin-1) score += 50; // Give high value for near-wins
         }
 
         return score;

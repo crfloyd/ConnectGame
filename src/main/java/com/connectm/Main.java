@@ -34,13 +34,13 @@ public class Main {
                 System.exit(1);
             }
 
-            GameState gameState = new GameState(boardSize, M);
+            GameState gameState = new GameState(boardSize, M, firstPlayer);
 
             // Create the view with cell size 80 and header size 100.
             ConnectMView view = new ConnectMView(gameState, 80, 100);
 
             // Create the controller.
-            GameController controller = new GameController(gameState, view, true);
+            GameController controller = new GameController(gameState, view);
 
             // Create a wrapper panel with GridBagLayout to center the view.
             JPanel wrapper = new JPanel(new GridBagLayout());

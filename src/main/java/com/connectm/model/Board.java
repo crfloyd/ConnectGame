@@ -5,6 +5,7 @@ import java.util.Arrays;
 public class Board {
     private final int size;
     private final int[][] board; // 0 = empty, 1 = player piece, 2 = opponent (if needed)
+    private final int[][] directions = {{1, 0}, {0, 1}, {1, 1}, {1, -1}}; // Vertical, Horizontal, Diagonal (\), Diagonal (/)
 
     public Board(int size) {
         this.size = size;
@@ -15,7 +16,7 @@ public class Board {
         return size;
     }
 
-    public int[][] getBoard() {
+    public int[][] getState() {
         return board;
     }
 
@@ -26,7 +27,7 @@ public class Board {
     // Drop a piece in the given column. Returns the row at which the piece lands, or -1 if full.
     public int dropPiece(int col, int piece) {
         if (isColumnFull(col)) {
-            System.out.println("Column " + col + " is full, cannot drop piece.");
+//            System.out.println("Column " + col + " is full, cannot drop piece.");
             return -1;
         }
         int row = size - 1;
@@ -35,8 +36,6 @@ public class Board {
         }
         if (row >= 0) {
             board[row][col] = piece;
-//            System.out.println("Dropped piece for player " + piece + " at row " + row + ", column " + col);
-//            printBoard(); // Debugging
             return row;
         }
         return -1;
@@ -55,17 +54,12 @@ public class Board {
 
 
     public boolean checkWin(int player, int discsToWin) {
-        int[][] directions = {
-                {1, 0}, {0, 1}, {1, 1}, {1, -1} // Vertical, Horizontal, Diagonal (\), Diagonal (/)
-        };
-
         for (int row = 0; row < size; row++) {
             for (int col = 0; col < size; col++) {
                 if (board[row][col] == player) {
                     for (int[] dir : directions) {
                         int count = countConsecutive(row, col, dir[0], dir[1], player);
                         if (count >= discsToWin) { // Always check for 4 in a row
-                            System.out.println("Win detected at row " + row + ", column " + col + " for Player " + player);
                             return true;
                         }
                         if (countConsecutive(row, col, dir[0], dir[1], player) >= discsToWin) {
