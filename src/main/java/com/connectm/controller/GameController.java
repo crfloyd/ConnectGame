@@ -97,4 +97,15 @@ public class GameController {
         String playerName = gameState.getCurrentPlayer() == 1 ? "Player 1" : "AI (Player 2)";
         view.updateStatus(playerName + "'s Turn");
     }
+
+    /**
+     * Resets the game state to start a new game.
+     */
+    public void resetGame() {
+        gameState.getBoard().clearBoard();
+        gameState.setGameOver(false);
+        gameState.switchPlayer(); // Switch to the next player (e.g., if Player 1 won, Player 2 starts)
+        updateStatus();
+        view.repaint();
+    }
 }

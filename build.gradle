@@ -14,23 +14,20 @@ sourceCompatibility = '17'
 targetCompatibility = '17'
 
 dependencies {
-    // FlatLaf gives you a modern look and feel
+    // FlatLaf for modern Swing UI look and feel
     implementation 'com.formdev:flatlaf:3.0'
-
+    // JUnit for unit testing
     testImplementation 'org.junit.jupiter:junit-jupiter-api:5.10.2'
     testRuntimeOnly 'org.junit.jupiter:junit-jupiter-engine:5.10.2'
 }
 
 application {
-    // Fully-qualified main class
     mainClass = 'com.connectm.Main'
 }
 
 jar {
     manifest {
-        attributes(
-                'Main-Class': 'com.connectm.Main'
-        )
+        attributes('Main-Class': 'com.connectm.Main')
     }
     from {
         configurations.runtimeClasspath.collect { it.isDirectory() ? it : zipTree(it) }
@@ -40,4 +37,13 @@ jar {
 
 test {
     useJUnitPlatform()
+}
+
+// Custom task to run the app with command-line args (e.g., ./gradlew runApp --args="6 4 1")
+tasks.register('runApp', JavaExec) {
+    group = 'application'
+    description = 'Run Connect M with N, M, H arguments'
+    classpath = sourceSets.main.runtimeClasspath
+    mainClass = 'com.connectm.Main'
+    args = project.hasProperty('args') ? project.property('args').split() : []
 }

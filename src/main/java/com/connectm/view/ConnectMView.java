@@ -217,7 +217,6 @@ public class ConnectMView extends JPanel {
         }
 
         // Draw the preview disc in the top half (if not animating)
-        // Draw the preview disc in the top half (if not animating)
         if (hoveredColumn >= 0 && hoveredColumn < gridSize && !isAnimating) {
             int holeMargin = cellSize / 10;
             int holeDiameter = cellSize - 2 * holeMargin;
@@ -315,18 +314,10 @@ public class ConnectMView extends JPanel {
             );
 
             if (option == JOptionPane.YES_OPTION) {
-                resetGame();
+                controller.resetGame();
             } else {
                 System.exit(0);
             }
         });
-    }
-
-    private void resetGame() {
-        gameState.getBoard().clearBoard();
-        gameState.setGameOver(false);
-        gameState.switchPlayer(); // Optionally reset to player 1
-        updateStatus("Player " + gameState.getCurrentPlayer() + "'s Turn");
-        repaint();
     }
 }
