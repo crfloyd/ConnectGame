@@ -7,29 +7,43 @@ import com.connectm.view.ConnectMView;
 
 import javax.swing.Timer;
 
+/**
+ * Manages the game flow, coordinating between the model (GameState) and view (ConnectMView).
+ * Handles user and AI moves, checks for win/draw conditions, and updates the UI.
+ */
 public class GameController {
+    private static final int AI_MOVE_DELAY_MS = 5; // Delay in milliseconds for AI moves
+
     private final GameState gameState;
     private final ConnectMView view;
     private final AIPlayer aiPlayer;
 
+    /**
+     * Constructs the controller with the given game state and view.
+     *
+     * @param gameState The game state to manage
+     * @param view      The view to update
+     */
     public GameController(GameState gameState, ConnectMView view) {
         this.gameState = gameState;
         this.view = view;
-        view.setGameController(this);
         this.aiPlayer = new AIPlayer();
+        view.setGameController(this);
+        updateStatus(); // Set initial status
     }
 
-
-
-    // Called by the view when the falling piece animation completes.
-    public void finalizeMove(int col, int player) {
-        int rowLanded = gameState.getBoard().dropPiece(col, player);
+    /**
+     * Finalizes a move after the animation completes, checks for win/draw, and switches players.
+     *
+     * @param column The column where the piece was dropped (0 to N-1)
+     * @param player The player who made the move (1 for human, 2 for AI)
+     */
+    public void finalizeMove(int column, int player) {
+        int rowLanded = gameState.getBoard().dropPiece(column, player);
         if (rowLanded == -1) {
-            System.out.println("Move was invalid, skipping turn.");
+            view.updateStatus("Invalid move: Column " + (column + 1) + " is full.");
             return;
         }
-
-        System.out.println("Finalizing move: Player " + player + " at column " + col + " row " + rowLanded);
 
         // Check for a win
         if (gameState.getBoard().checkWin(player, gameState.getDiscsToWin())) {
@@ -45,29 +59,42 @@ public class GameController {
             return;
         }
 
-        // Switch player
+        // Switch player and update the view
         gameState.switchPlayer();
+        updateStatus();
         view.repaint();
 
-        // If it's AI's turn, let it make a move
+        // If it's the AI's turn, let it make a move
         if (gameState.getCurrentPlayer() == 2) {
             handleAIMove();
         }
     }
 
+    /**
+     * Initiates an AI move by computing the best column and animating the drop.
+     */
     private void handleAIMove() {
-        if (gameState.isGameOver() || aiPlayer == null) return; // Ensure AI exists
+        if (gameState.isGameOver() || aiPlayer == null) return;
 
-        Timer aiMoveDelay = new Timer(5, e -> { // Delay for realism
-            int aiMove = aiPlayer.getBestMove(gameState.getBoard(), gameState.getDiscsToWin());
-
-            if (aiMove != -1) {
-                Move move = new Move(aiMove);
-                view.animateDrop(move, gameState.getCurrentPlayer()); // AI drops a piece
+        view.updateStatus("AI is thinking...");
+        Timer aiMoveTimer = new Timer(AI_MOVE_DELAY_MS, e -> {
+            int aiColumn = aiPlayer.getBestMove(gameState.getBoard(), gameState.getDiscsToWin());
+            if (aiColumn != -1) {
+                Move move = new Move(aiColumn);
+                view.animateDrop(move, gameState.getCurrentPlayer());
+            } else {
+                view.updateStatus("AI cannot make a move.");
             }
         });
+        aiMoveTimer.setRepeats(false);
+        aiMoveTimer.start();
+    }
 
-        aiMoveDelay.setRepeats(false); // AI should move once per turn
-        aiMoveDelay.start();
+    /**
+     * Updates the view's status message based on the current player.
+     */
+    private void updateStatus() {
+        String playerName = gameState.getCurrentPlayer() == 1 ? "Player 1" : "AI (Player 2)";
+        view.updateStatus(playerName + "'s Turn");
     }
 }

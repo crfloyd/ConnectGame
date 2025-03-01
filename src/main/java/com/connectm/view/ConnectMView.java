@@ -10,45 +10,65 @@ import java.awt.*;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 
+/**
+ * Displays the Connect M game board graphically, handles user interactions, and animates piece drops.
+ */
 public class ConnectMView extends JPanel {
     private final int gridSize;
     private final int cellSize;
     private final int headerSize; // Total header size (e.g. 100 = 50px preview + 50px column numbers)
     private GameController controller;
     private final GameState gameState;
+    private JLabel statusLabel; // Label for game status messages
 
-    // Colors for the two players.
-    private final Color redColor = new Color(220, 20, 60);
-    private final Color yellowColor = new Color(255, 215, 0);
+    // Colors for the two players
+    private final Color player1Color = new Color(220, 20, 60);  // Red for Player 1 (human)
+    private final Color player2Color = new Color(255, 215, 0);  // Yellow for Player 2 (AI)
+    private final Color boardBlue = new Color(0, 0, 150);       // Board background color
+    private final Color highlightColor = new Color(255, 255, 255, 100); // Column highlight
 
-    // Hover state.
+    // Hover state
     private int hoveredColumn = -1;
 
-    // Animation state for the falling piece.
+    // Animation state for the falling piece
     private boolean isAnimating = false;
     private int animColumn = -1;
     private int animTargetRow = -1;
     private double animCurrentRow = -1;
-    private final double animStep = 0.3; // row increment per tick
+    private final double animStep = 0.3; // Row increment per tick
     private Color fallingPieceColor;
 
-
+    /**
+     * Constructs the game view with the given game state and dimensions.
+     *
+     * @param gameState  The game state to display
+     * @param cellSize   The pixel size of each grid cell
+     * @param headerSize The pixel size of the header area above the board
+     */
     public ConnectMView(GameState gameState, int cellSize, int headerSize) {
         this.gameState = gameState;
         this.gridSize = gameState.getBoard().getSize();
         this.cellSize = cellSize;
         this.headerSize = headerSize;
-        int width = headerSize + gridSize * cellSize;
-        int height = headerSize + gridSize * cellSize;
+
+        // Set panel dimensions
+        int width = gridSize * cellSize;
+        int height = headerSize + gridSize * cellSize + 30; // Extra space for status label
         setPreferredSize(new Dimension(width, height));
         setBackground(Color.WHITE);
 
-        // Add mouse listener for hover and click.
+        // Set up layout to include status label at the bottom
+        setLayout(new BorderLayout());
+        statusLabel = new JLabel("Player 1's Turn", SwingConstants.CENTER);
+        statusLabel.setFont(new Font("Segoe UI", Font.PLAIN, 14));
+        add(statusLabel, BorderLayout.SOUTH);
+
+        // Add mouse listener for hover and click
         MouseAdapter mouseHandler = new MouseAdapter() {
             @Override
             public void mouseMoved(MouseEvent e) {
                 if (isAnimating) return;
-                int boardX = headerSize/2;
+                int boardX = 0;
                 int boardY = headerSize;
                 int boardWidth = gridSize * cellSize;
                 int boardHeight = gridSize * cellSize;
@@ -88,24 +108,36 @@ public class ConnectMView extends JPanel {
         addMouseListener(mouseHandler);
     }
 
-    // Called by the view when the user clicks a column.
+    /**
+     * Handles a user click on the specified column, initiating a piece drop if valid.
+     *
+     * @param col The column index clicked (0 to gridSize-1)
+     */
     public void handleColumnClick(int col) {
         if (gameState.getBoard().isColumnFull(col)) {
             return;
         }
-        // Create a move (for now, only the column is needed).
         Move move = new Move(col);
-        // Tell the view to animate the drop of the current player's piece.
         animateDrop(move, gameState.getCurrentPlayer());
     }
 
+    /**
+     * Sets the game controller for this view to delegate move handling.
+     *
+     * @param controller The GameController instance
+     */
     public void setGameController(GameController controller) {
         this.controller = controller;
     }
 
-    // Called by the controller to animate the drop of a piece.
+    /**
+     * Animates the dropping of a piece in the specified column for the given player.
+     *
+     * @param move   The move containing the column to drop into
+     * @param player The player making the move (1 or 2)
+     */
     public void animateDrop(Move move, int player) {
-        fallingPieceColor = (player == 1) ? this.redColor : this.yellowColor;
+        fallingPieceColor = (player == 1) ? player1Color : player2Color;
         Board board = gameState.getBoard();
 
         int targetRow = -1;
@@ -125,14 +157,21 @@ public class ConnectMView extends JPanel {
         getDropTimer(player).start();
     }
 
+    /**
+     * Updates the status message displayed below the board.
+     *
+     * @param message The message to display
+     */
+    public void updateStatus(String message) {
+        statusLabel.setText(message);
+    }
+
     private Timer getDropTimer(int player) {
         final double gravity = 0.07;   // Acceleration factor (lower = smoother)
-        final double maxSpeed = 0.8;  // Maximum fall speed
-
+        final double maxSpeed = 0.8;   // Maximum fall speed
         final double[] speed = {0.08}; // Initial slow speed
 
-        // milliseconds between animation updates
-        int animDelay = 25;
+        int animDelay = 25; // Milliseconds between animation updates
         return new Timer(animDelay, e -> {
             if (animCurrentRow < animTargetRow) {
                 speed[0] = Math.min(speed[0] + gravity, maxSpeed); // Accelerate smoothly
@@ -152,28 +191,33 @@ public class ConnectMView extends JPanel {
         });
     }
 
-
     @Override
     protected void paintComponent(Graphics g) {
         super.paintComponent(g);
-        // Use Graphics2D for smooth rendering.
         Graphics2D g2d = (Graphics2D) g;
         g2d.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
 
-        // Define header areas.
-        int previewAreaHeight = headerSize / 2;      // Top half for preview disk.
-        int columnHeaderAreaHeight = headerSize / 2;   // Bottom half for column numbers.
-        int boardX = headerSize/2;
+        // Define header areas
+        int previewAreaHeight = headerSize / 2;      // Top half for preview disk
+        int columnHeaderAreaHeight = headerSize / 2; // Bottom half for column numbers
+        int boardX = 0;
         int boardY = headerSize;
         int boardWidth = gridSize * cellSize;
         int boardHeight = gridSize * cellSize;
 
-        // --- Draw Left Header (Row Numbers) ---
+        // Draw column numbers in the header area
         g2d.setColor(Color.DARK_GRAY);
         Font headerFont = new Font("Segoe UI", Font.BOLD, 14);
         g2d.setFont(headerFont);
+        for (int col = 0; col < gridSize; col++) {
+            String colNum = String.valueOf(col + 1); // Columns are 1 to N
+            int textX = boardX + col * cellSize + cellSize / 2 - g2d.getFontMetrics().stringWidth(colNum) / 2;
+            int textY = previewAreaHeight + columnHeaderAreaHeight / 2 + g2d.getFontMetrics().getAscent() / 2;
+            g2d.drawString(colNum, textX, textY);
+        }
 
-        // (A) Draw the Preview Disk in the top half (if not animating).
+        // Draw the preview disc in the top half (if not animating)
+        // Draw the preview disc in the top half (if not animating)
         if (hoveredColumn >= 0 && hoveredColumn < gridSize && !isAnimating) {
             int holeMargin = cellSize / 10;
             int holeDiameter = cellSize - 2 * holeMargin;
@@ -181,30 +225,32 @@ public class ConnectMView extends JPanel {
             int previewX = boardX + hoveredColumn * cellSize + (cellSize - previewDiameter) / 2;
             int previewY = (previewAreaHeight - previewDiameter) / 2;
             int currentPlayer = gameState.getCurrentPlayer();
-//            Color previewColor = (currentPlayer == 1) ? new Color(220, 20, 60) : new Color(255, 215, 0);
-            if (currentPlayer == 1) {
-                g2d.setColor(redColor);
-                g2d.fillOval(previewX, previewY, previewDiameter, previewDiameter);
-                g2d.setColor(new Color(100, 100, 100));
-                g2d.setStroke(new BasicStroke(2));
-                g2d.drawOval(previewX, previewY, previewDiameter, previewDiameter);
-            }
+
+            // Draw a more prominent shadow
+            int shadowOffset = 4; // Increased offset for better visibility
+            g2d.setColor(new Color(0, 0, 0, 100)); // Increased alpha for more contrast
+            g2d.fillOval(previewX + shadowOffset, previewY + shadowOffset, previewDiameter, previewDiameter);
+
+            // Draw the preview disc
+            g2d.setColor(currentPlayer == 1 ? player1Color : player2Color);
+            g2d.fillOval(previewX, previewY, previewDiameter, previewDiameter);
+            g2d.setColor(new Color(100, 100, 100));
+            g2d.setStroke(new BasicStroke(2));
+            g2d.drawOval(previewX, previewY, previewDiameter, previewDiameter);
         }
 
-        // --- Draw Board Background (Connect 4 Style) ---
-        Color boardBlue = new Color(0, 0, 150);
+        // Draw board background (Connect 4 style)
         g2d.setColor(boardBlue);
         g2d.fillRect(boardX, boardY, boardWidth, boardHeight);
 
-        // --- Highlight Hovered Column (if not animating) ---
+        // Highlight hovered column (if not animating)
         if (hoveredColumn >= 0 && hoveredColumn < gridSize && !isAnimating) {
-            Color highlight = new Color(255, 255, 255, 100);
             int highlightX = boardX + hoveredColumn * cellSize;
-            g2d.setColor(highlight);
+            g2d.setColor(highlightColor);
             g2d.fillRect(highlightX, boardY, cellSize, boardHeight);
         }
 
-        // --- Draw Circular Cutouts (Holes) ---
+        // Draw circular cutouts (holes)
         int holeMargin = cellSize / 10;
         int holeDiameter = cellSize - 2 * holeMargin;
         for (int row = 0; row < gridSize; row++) {
@@ -219,7 +265,7 @@ public class ConnectMView extends JPanel {
             }
         }
 
-        // --- Draw Pieces from the Board Model ---
+        // Draw pieces from the board model
         Board boardModel = gameState.getBoard();
         int[][] boardArray = boardModel.getState();
         for (int row = 0; row < gridSize; row++) {
@@ -227,11 +273,7 @@ public class ConnectMView extends JPanel {
                 if (boardArray[row][col] != 0) {
                     int x = boardX + col * cellSize + holeMargin;
                     int y = boardY + row * cellSize + holeMargin;
-                    if (boardArray[row][col] == 1) {
-                        g2d.setColor(new Color(220, 20, 60));
-                    } else {
-                        g2d.setColor(new Color(255, 215, 0));
-                    }
+                    g2d.setColor(boardArray[row][col] == 1 ? player1Color : player2Color);
                     g2d.fillOval(x, y, holeDiameter, holeDiameter);
                     g2d.setColor(new Color(100, 100, 100));
                     g2d.setStroke(new BasicStroke(2));
@@ -240,7 +282,7 @@ public class ConnectMView extends JPanel {
             }
         }
 
-        // --- Draw the Falling (Animated) Piece ---
+        // Draw the falling (animated) piece
         if (isAnimating && animColumn >= 0) {
             int holeMarginAnim = cellSize / 10;
             int holeDiameterAnim = cellSize - 2 * holeMarginAnim;
@@ -254,6 +296,11 @@ public class ConnectMView extends JPanel {
         }
     }
 
+    /**
+     * Displays a game-over dialog with the result and an option to play again.
+     *
+     * @param message The game-over message (e.g., "Player 1 wins!")
+     */
     public void showGameOverDialog(String message) {
         SwingUtilities.invokeLater(() -> {
             int option = JOptionPane.showOptionDialog(
@@ -276,9 +323,10 @@ public class ConnectMView extends JPanel {
     }
 
     private void resetGame() {
-        gameState.getBoard().clearBoard(); // Implement a method in Board.java to reset the grid
+        gameState.getBoard().clearBoard();
         gameState.setGameOver(false);
         gameState.switchPlayer(); // Optionally reset to player 1
+        updateStatus("Player " + gameState.getCurrentPlayer() + "'s Turn");
         repaint();
     }
 }
