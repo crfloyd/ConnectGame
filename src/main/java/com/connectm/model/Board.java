@@ -62,9 +62,6 @@ public class Board {
                         if (count >= discsToWin) { // Always check for 4 in a row
                             return true;
                         }
-                        if (countConsecutive(row, col, dir[0], dir[1], player) >= discsToWin) {
-                            return true;
-                        }
                     }
                 }
             }

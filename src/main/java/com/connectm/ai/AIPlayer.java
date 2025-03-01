@@ -90,21 +90,18 @@ public class AIPlayer {
 
     private int checkPotential(Board board, int row, int col, int player) {
         int score = 0;
-
         for (int[] dir : DIRECTIONS) {
             int count = 1;
             int r = row + dir[0], c = col + dir[1];
-
             while (r >= 0 && r < board.getSize() && c >= 0 && c < board.getSize() &&
                     board.getState()[r][c] == player) {
                 count++;
                 r += dir[0];
                 c += dir[1];
             }
-
-            if (count == discsToWin-1) score += 50; // Give high value for near-wins
+            if (count == discsToWin - 1) score += 50;  // Near-win
+            else if (count == discsToWin - 2) score += 10;  // Two steps away
         }
-
         return score;
     }
 }
