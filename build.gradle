@@ -14,11 +14,6 @@ sourceCompatibility = '17'
 targetCompatibility = '17'
 
 dependencies {
-    // FlatLaf for modern Swing UI look and feel
-    implementation 'com.formdev:flatlaf:3.0'
-    // JUnit for unit testing
-    testImplementation 'org.junit.jupiter:junit-jupiter-api:5.10.2'
-    testRuntimeOnly 'org.junit.jupiter:junit-jupiter-engine:5.10.2'
 }
 
 application {
@@ -39,7 +34,6 @@ test {
     useJUnitPlatform()
 }
 
-// Custom task to run the app with command-line args (e.g., ./gradlew runApp --args="6 4 1")
 tasks.register('runApp', JavaExec) {
     group = 'application'
     description = 'Run Connect M with N, M, H arguments'
