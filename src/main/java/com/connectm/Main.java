@@ -41,7 +41,6 @@ public class Main {
             // Force repaint with a timer to ensure rendering on all platforms
             Timer repaintTimer = new Timer(100, e -> {
                 view.repaint();
-                System.out.println("Forced repaint triggered");
             });
             repaintTimer.setRepeats(true);
             repaintTimer.start();
@@ -49,7 +48,6 @@ public class Main {
             // Stop the timer after 1 second (10 repaints)
             Timer stopTimer = new Timer(1000, e -> {
                 repaintTimer.stop();
-                System.out.println("Repaint timer stopped");
             });
             stopTimer.setRepeats(false);
             stopTimer.start();
@@ -104,7 +102,6 @@ public class Main {
             @Override
             public void componentResized(ComponentEvent e) {
                 view.repaint();
-                System.out.println("Panel resized: " + view.getWidth() + "x" + view.getHeight());
             }
         });
 
