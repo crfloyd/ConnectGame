@@ -51,9 +51,9 @@ public class ConnectMView extends JPanel {
         this.cellSize = cellSize;
         this.headerSize = headerSize;
 
-        // Set panel dimensions
+        // Set panel dimensions with extra padding for visibility
         int width = gridSize * cellSize;
-        int height = headerSize + gridSize * cellSize + 30; // Extra space for status label
+        int height = headerSize + gridSize * cellSize + 50; // Increased padding for status label and extra space
         setPreferredSize(new Dimension(width, height));
         setBackground(Color.WHITE);
 
@@ -106,6 +106,10 @@ public class ConnectMView extends JPanel {
         };
         addMouseMotionListener(mouseHandler);
         addMouseListener(mouseHandler);
+
+        // Ensure the panel is visible and request focus
+        setVisible(true);
+        requestFocusInWindow();
     }
 
     /**
@@ -193,6 +197,7 @@ public class ConnectMView extends JPanel {
 
     @Override
     protected void paintComponent(Graphics g) {
+        System.out.println("paintComponent called"); // Debug: Confirm method is invoked
         super.paintComponent(g);
         Graphics2D g2d = (Graphics2D) g;
         g2d.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
@@ -201,9 +206,13 @@ public class ConnectMView extends JPanel {
         int previewAreaHeight = headerSize / 2;      // Top half for preview disk
         int columnHeaderAreaHeight = headerSize / 2; // Bottom half for column numbers
         int boardX = 0;
-        int boardY = headerSize;
+        int boardY = headerSize; // Adjusted to ensure the board fits within the visible area
         int boardWidth = gridSize * cellSize;
         int boardHeight = gridSize * cellSize;
+
+        // Debug: Print panel dimensions and coordinates
+        System.out.println("Panel size: " + getWidth() + "x" + getHeight());
+        System.out.println("Board coordinates: (" + boardX + ", " + boardY + "), size: " + boardWidth + "x" + boardHeight);
 
         // Draw column numbers in the header area
         g2d.setColor(Color.DARK_GRAY);
