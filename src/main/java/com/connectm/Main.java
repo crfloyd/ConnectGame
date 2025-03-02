@@ -3,7 +3,6 @@ package com.connectm;
 import com.connectm.controller.GameController;
 import com.connectm.model.GameState;
 import com.connectm.view.ConnectMView;
-import com.formdev.flatlaf.FlatLightLaf;
 
 import javax.swing.*;
 import javax.swing.border.EmptyBorder;
@@ -19,20 +18,8 @@ public class Main {
     private static final int CELL_SIZE = 80;    // Pixel size of each grid cell
     private static final int HEADER_SIZE = 100; // Pixel size of the header area
 
-    /**
-     * Launches the Connect M game by validating arguments and initializing the UI on the Event Dispatch Thread.
-     *
-     * @param args Command-line arguments: N (board size), M (discs to connect), H (first player: 0=AI, 1=human)
-     */
     public static void main(String[] args) {
         SwingUtilities.invokeLater(() -> {
-            // Set up the modern look and feel
-            try {
-                UIManager.setLookAndFeel(new FlatLightLaf());
-            } catch (Exception e) {
-                System.err.println("Failed to set look and feel: " + e.getMessage());
-                e.printStackTrace();
-            }
 
             // Validate and parse command-line arguments
             if (!validateArgs(args)) {
@@ -94,12 +81,6 @@ public class Main {
         }
     }
 
-    /**
-     * Creates and configures the main JFrame for the game, centering the view within it.
-     *
-     * @param view The ConnectMView component to display in the frame
-     * @return The configured JFrame ready to be shown
-     */
     private static JFrame createMainFrame(ConnectMView view) {
         JFrame frame = new JFrame("Connect M");
         frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
