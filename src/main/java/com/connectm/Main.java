@@ -8,6 +8,8 @@ import com.formdev.flatlaf.FlatLightLaf;
 import javax.swing.*;
 import javax.swing.border.EmptyBorder;
 import java.awt.*;
+import java.awt.event.ComponentAdapter;
+import java.awt.event.ComponentEvent;
 
 /**
  * Entry point for the Connect M game application. Initializes the game with command-line arguments
@@ -48,15 +50,25 @@ public class Main {
             // Set up the main window
             JFrame frame = createMainFrame(view);
             frame.setVisible(true);
+
+            // Force repaint with a timer to ensure rendering on all platforms
+            Timer repaintTimer = new Timer(100, e -> {
+                view.repaint();
+                System.out.println("Forced repaint triggered");
+            });
+            repaintTimer.setRepeats(true);
+            repaintTimer.start();
+
+            // Stop the timer after 1 second (10 repaints)
+            Timer stopTimer = new Timer(1000, e -> {
+                repaintTimer.stop();
+                System.out.println("Repaint timer stopped");
+            });
+            stopTimer.setRepeats(false);
+            stopTimer.start();
         });
     }
 
-    /**
-     * Validates the command-line arguments for the game.
-     *
-     * @param args Array of arguments: [N, M, H]
-     * @return true if arguments are valid (3 ≤ N ≤ 10, 2 ≤ M ≤ N, H = 0 or 1), false otherwise
-     */
     private static boolean validateArgs(String[] args) {
         if (args.length < 3) {
             System.err.println("Usage: java -jar ConnectM.jar <N> <M> <H>");
@@ -93,23 +105,28 @@ public class Main {
         frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         frame.setLayout(new BorderLayout());
 
-        // Center the view with padding
-        JPanel wrapper = new JPanel(new GridBagLayout());
+        // Create a wrapper panel to add padding around the ConnectMView
+        JPanel wrapper = new JPanel(new BorderLayout());
         wrapper.setBackground(Color.WHITE);
-        wrapper.setBorder(new EmptyBorder(50, 50, 50, 50));
-
-        GridBagConstraints gbc = new GridBagConstraints();
-        gbc.gridx = 0;
-        gbc.gridy = 0;
-        gbc.fill = GridBagConstraints.NONE;
-        gbc.anchor = GridBagConstraints.CENTER;
-        gbc.weightx = 1.0;
-        gbc.weighty = 1.0;
-        wrapper.add(view, gbc);
+        wrapper.setBorder(new EmptyBorder(50, 50, 50, 50)); // 50px padding on all sides
+        wrapper.add(view, BorderLayout.CENTER);
 
         frame.add(wrapper, BorderLayout.CENTER);
         frame.pack();
         frame.setLocationRelativeTo(null); // Center on screen
+
+        // Set a larger minimum size to ensure the board is visible on all systems
+        frame.setMinimumSize(new Dimension(600, 600)); // Increased minimum size
+
+        // Add a component listener to repaint on resize
+        view.addComponentListener(new ComponentAdapter() {
+            @Override
+            public void componentResized(ComponentEvent e) {
+                view.repaint();
+                System.out.println("Panel resized: " + view.getWidth() + "x" + view.getHeight());
+            }
+        });
+
         return frame;
     }
 }
